@@ -4,10 +4,13 @@ var direction
 var ydirection
 var lastDirection = 0
 
+var xcamSpeed = 5
+var ycamSpeed = 2
+
 const SPEED = 600.0
 const JUMP_VELOCITY = -1000.0
-const DASH_VELOCITY = 1000
-const DASH_TIME = .3
+const DASH_VELOCITY = 1300
+const DASH_TIME = .5
 
 
 var attacking = false
@@ -20,6 +23,9 @@ var windUpTimeMax = .7
 var chargeTime = .4
 var attackTime = .3
 var chargeAttackTime = .3
+
+@export var attackDamage = 30
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -37,8 +43,8 @@ func move(delta) -> void:
 		velocity.y = 0
 
 func camera(delta) -> void:
-	$"../Camera2D".position.x = lerp($"../Camera2D".position.x, position.x , delta * 5)
-	$"../Camera2D".position.y = lerp($"../Camera2D".position.y, position.y , delta * 2)
+	$"../Camera2D".position.x = lerp($"../Camera2D".position.x, position.x , delta * xcamSpeed)
+	$"../Camera2D".position.y = lerp($"../Camera2D".position.y, position.y , delta * ycamSpeed)
 
 
 
@@ -48,23 +54,26 @@ func dashStart() -> void:
 	$Timers/Dash.start(DASH_TIME)
 
 func startWindUp() -> void:
+	$Hitbox.monitoring = false
 	$Timers/Windup.start(windUpTimeMax)
 	$AnimationPlayer.play("Winudp")
 	windingUp = true
 
 func startAttack() -> void:
+	attackDamage = 20
 	$Timers/Attack.start(attackTime)
 	attacking = true
 	$AnimationPlayer.play("new_animation")
 	print("Attack!")
 	
 func startChargeAttack() -> void:
+	attackDamage = 40
 	$Timers/Attack.start(chargeAttackTime)
 	attacking = true
 	
 	velocity.x = -700 * direction
 	velocity.y = -1000 * ydirection
-	
+	$AnimationPlayer.play("new_animation")
 	print("Charge!")
 
 func windUp() -> void:
@@ -93,7 +102,7 @@ func windUp() -> void:
 func attack() -> void:
 	if $Timers/Attack.time_left > 0 or not $Timers/Attack.is_stopped():
 		$Hitbox.monitoring = true
-		$Hitbox.position = Vector2(130 * direction, 130 * y sdds adirection)
+		$Hitbox.position = Vector2(130 * direction, 130 * ydirection)
 	else:
 		$Hitbox.monitoring = false
 		$Hitbox.position = Vector2(0,0)
@@ -147,6 +156,19 @@ func _process(delta: float) -> void:
 	if attacking == true:
 		attack()
 	
+	if abs(velocity.y) > 2000:
+		ycamSpeed = 12
+	else:
+		ycamSpeed = 2
+	
+	if abs(velocity.x) > 2000:
+		xcamSpeed = 15
+	else:
+		xcamSpeed = 5
+	if position.y > 15000:
+		get_tree().reload_current_scene() 
+	
 	move_and_slide()
 	camera(delta)
+	
 	

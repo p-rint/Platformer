@@ -7,8 +7,10 @@ func _ready() -> void:
 	pass
 	
 func _handleHit(Enemy) -> void:
-	Enemy.Health -= 10
+	var direction = -Vector2(Enemy.position.x - $"..".position.x, 0).normalized().x
+	Enemy.Health -= $"..".attackDamage
 	Enemy.Stunned = true
+	Enemy.velocity = Vector2(-direction, -1) * 1000/Enemy.scale.x
 	Enemy.get_node("Timers/Stun").start(.3)
 	Enemy.move_and_slide()
 	print(Enemy.Health)
